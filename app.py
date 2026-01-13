@@ -103,19 +103,16 @@ with st.sidebar:
     
     # Energy costs
     st.markdown("### 💰 Energy Costs")
-    electricity_cost = st.number_input("Electricity Cost ($/kWh)", 0.05, 0.30, 0.12, step=0.01)
-    demand_cost = st.number_input("Demand Charge ($/kW-month)", 5.0, 30.0, 15.0, step=1.0)
+    electricity_cost = st.number_input("Electricity Cost ($/kWh)", 0.05, 0.30, 0.12, step=0.01, format="%.2f")
+    demand_cost = st.number_input("Demand Charge ($/kW-month)", 5.0, 30.0, 15.0, step=1.0, format="%.1f")
     
     # Carbon factor
-    carbon_factor = st.number_input("CO₂ Emission Factor (kg/kWh)", 0.1, 1.5, 0.5, step=0.01)
+    carbon_factor = st.number_input("CO₂ Emission Factor (kg/kWh)", 0.1, 1.5, 0.5, step=0.01, format="%.2f")
     
     st.markdown("---")
     st.markdown("### 🔄 Simulation Controls")
     simulation_year = st.slider("Analysis Period (Years)", 1, 10, 5)
     run_simulation = st.button("🚀 Run Energy Retrofit Simulation")
-
-# Main content area
-tab1, tab2, tab3, tab4 = st.tabs(["📊 Motor Systems", "💡 Lighting Systems", "📈 Simulation Results", "🎯 Recommendations"])
 
 # Engineering Models
 class MotorSystem:
@@ -131,9 +128,9 @@ class MotorSystem:
     
     # Motor costs by rating ($/kW)
     MOTOR_COSTS = {
-        'IE2': 50,
-        'IE3': 65,
-        'IE4': 85
+        'IE2': 50.0,
+        'IE3': 65.0,
+        'IE4': 85.0
     }
     
     @staticmethod
@@ -190,39 +187,39 @@ class LightingSystem:
     """Lighting system models"""
     
     LIGHTING_TYPES = {
-        'Incandescent': {'efficacy': 15, 'lifetime': 1000, 'cost_per_unit': 2},
-        'Fluorescent': {'efficacy': 60, 'lifetime': 8000, 'cost_per_unit': 8},
-        'CFL': {'efficacy': 65, 'lifetime': 10000, 'cost_per_unit': 5},
-        'Metal Halide': {'efficacy': 80, 'lifetime': 15000, 'cost_per_unit': 50},
-        'LED': {'efficacy': 120, 'lifetime': 50000, 'cost_per_unit': 15}
+        'Incandescent': {'efficacy': 15, 'lifetime': 1000, 'cost_per_unit': 2.0},
+        'Fluorescent': {'efficacy': 60, 'lifetime': 8000, 'cost_per_unit': 8.0},
+        'CFL': {'efficacy': 65, 'lifetime': 10000, 'cost_per_unit': 5.0},
+        'Metal Halide': {'efficacy': 80, 'lifetime': 15000, 'cost_per_unit': 50.0},
+        'LED': {'efficacy': 120, 'lifetime': 50000, 'cost_per_unit': 15.0}
     }
     
     @staticmethod
     def calculate_lighting_energy(num_fixtures, wattage_per_fixture, operating_hours):
         """Calculate annual lighting energy consumption"""
-        return num_fixtures * wattage_per_fixture * operating_hours / 1000  # kWh
+        return num_fixtures * wattage_per_fixture * operating_hours / 1000.0  # kWh
 
 # Default motor data based on factory type
 def get_default_motors(factory_type):
     """Get default motor configurations based on factory type"""
     defaults = {
         'Textile': [
-            {'rating': 15, 'quantity': 8, 'load_factor': 0.75, 'current_class': 'IE2'},
-            {'rating': 22, 'quantity': 6, 'load_factor': 0.80, 'current_class': 'IE2'},
-            {'rating': 37, 'quantity': 4, 'load_factor': 0.70, 'current_class': 'IE2'},
-            {'rating': 55, 'quantity': 2, 'load_factor': 0.85, 'current_class': 'IE1'},
+            {'rating': 15.0, 'quantity': 8, 'load_factor': 0.75, 'current_class': 'IE2'},
+            {'rating': 22.0, 'quantity': 6, 'load_factor': 0.80, 'current_class': 'IE2'},
+            {'rating': 37.0, 'quantity': 4, 'load_factor': 0.70, 'current_class': 'IE2'},
+            {'rating': 55.0, 'quantity': 2, 'load_factor': 0.85, 'current_class': 'IE1'},
         ],
         'Automotive': [
             {'rating': 18.5, 'quantity': 10, 'load_factor': 0.65, 'current_class': 'IE2'},
-            {'rating': 30, 'quantity': 8, 'load_factor': 0.75, 'current_class': 'IE2'},
-            {'rating': 45, 'quantity': 6, 'load_factor': 0.80, 'current_class': 'IE2'},
-            {'rating': 75, 'quantity': 3, 'load_factor': 0.70, 'current_class': 'IE1'},
+            {'rating': 30.0, 'quantity': 8, 'load_factor': 0.75, 'current_class': 'IE2'},
+            {'rating': 45.0, 'quantity': 6, 'load_factor': 0.80, 'current_class': 'IE2'},
+            {'rating': 75.0, 'quantity': 3, 'load_factor': 0.70, 'current_class': 'IE1'},
         ],
         'Food Processing': [
-            {'rating': 11, 'quantity': 12, 'load_factor': 0.60, 'current_class': 'IE2'},
+            {'rating': 11.0, 'quantity': 12, 'load_factor': 0.60, 'current_class': 'IE2'},
             {'rating': 18.5, 'quantity': 8, 'load_factor': 0.70, 'current_class': 'IE2'},
-            {'rating': 22, 'quantity': 6, 'load_factor': 0.75, 'current_class': 'IE2'},
-            {'rating': 37, 'quantity': 4, 'load_factor': 0.65, 'current_class': 'IE1'},
+            {'rating': 22.0, 'quantity': 6, 'load_factor': 0.75, 'current_class': 'IE2'},
+            {'rating': 37.0, 'quantity': 4, 'load_factor': 0.65, 'current_class': 'IE1'},
         ]
     }
     return defaults.get(factory_type, defaults['Textile'])
@@ -231,11 +228,14 @@ def get_default_motors(factory_type):
 def get_default_lighting(factory_type):
     """Get default lighting configurations based on factory type"""
     defaults = {
-        'Textile': {'type': 'Fluorescent', 'fixtures': 200, 'wattage': 40, 'hours_per_day': 16},
-        'Automotive': {'type': 'Metal Halide', 'fixtures': 150, 'wattage': 250, 'hours_per_day': 24},
-        'Food Processing': {'type': 'Fluorescent', 'fixtures': 180, 'wattage': 60, 'hours_per_day': 20}
+        'Textile': {'type': 'Fluorescent', 'fixtures': 200, 'wattage': 40.0, 'hours_per_day': 16},
+        'Automotive': {'type': 'Metal Halide', 'fixtures': 150, 'wattage': 250.0, 'hours_per_day': 24},
+        'Food Processing': {'type': 'Fluorescent', 'fixtures': 180, 'wattage': 60.0, 'hours_per_day': 20}
     }
     return defaults.get(factory_type, defaults['Textile'])
+
+# Main content area
+tab1, tab2, tab3, tab4 = st.tabs(["📊 Motor Systems", "💡 Lighting Systems", "📈 Simulation Results", "🎯 Recommendations"])
 
 # Tab 1: Motor Systems
 with tab1:
@@ -253,11 +253,11 @@ with tab1:
         for i, motor in enumerate(default_motors):
             cols = st.columns([2, 2, 2, 2, 2])
             with cols[0]:
-                rating = st.number_input(f"Rating (kW) #{i+1}", 0.75, 500.0, motor['rating'], step=0.5, key=f"rating_{i}")
+                rating = st.number_input(f"Rating (kW) #{i+1}", 0.75, 500.0, float(motor['rating']), step=0.5, key=f"rating_{i}")
             with cols[1]:
-                quantity = st.number_input(f"Quantity #{i+1}", 1, 100, motor['quantity'], key=f"qty_{i}")
+                quantity = st.number_input(f"Quantity #{i+1}", 1, 100, int(motor['quantity']), key=f"qty_{i}")
             with cols[2]:
-                load_factor = st.slider(f"Load Factor #{i+1}", 0.1, 1.0, motor['load_factor'], 0.05, key=f"load_{i}")
+                load_factor = st.slider(f"Load Factor #{i+1}", 0.1, 1.0, float(motor['load_factor']), 0.05, key=f"load_{i}")
             with cols[3]:
                 current_class = st.selectbox(f"Current Class #{i+1}", ['IE1', 'IE2', 'IE3', 'IE4'], 
                                            index=['IE1', 'IE2', 'IE3', 'IE4'].index(motor['current_class']), 
@@ -266,9 +266,9 @@ with tab1:
                 vfd_applicable = st.checkbox(f"VFD Applicable #{i+1}", value=(load_factor < 0.8), key=f"vfd_{i}")
             
             motors_data.append({
-                'rating': rating,
-                'quantity': quantity,
-                'load_factor': load_factor,
+                'rating': float(rating),
+                'quantity': int(quantity),
+                'load_factor': float(load_factor),
                 'current_class': current_class,
                 'vfd_applicable': vfd_applicable
             })
@@ -310,11 +310,11 @@ with tab2:
         
         col1a, col1b, col1c = st.columns(3)
         with col1a:
-            num_fixtures = st.number_input("Number of Fixtures", 1, 1000, default_lighting['fixtures'])
+            num_fixtures = st.number_input("Number of Fixtures", 1, 1000, int(default_lighting['fixtures']))
         with col1b:
-            wattage_per = st.number_input("Wattage per Fixture (W)", 10, 1000, default_lighting['wattage'])
+            wattage_per = st.number_input("Wattage per Fixture (W)", 10, 1000, float(default_lighting['wattage']), step=10.0)
         with col1c:
-            daily_hours = st.number_input("Operating Hours/Day", 1, 24, default_lighting['hours_per_day'])
+            daily_hours = st.number_input("Operating Hours/Day", 1, 24, int(default_lighting['hours_per_day']))
         
         # Calculate current lighting energy
         annual_hours = daily_hours * operating_days
@@ -370,61 +370,60 @@ with tab3:
         }
         
         # Calculate motor upgrade savings
-        total_motor_upgrade_savings = 0
-        total_motor_upgrade_cost = 0
-        total_vfd_savings = 0
-        total_vfd_cost = 0
+        total_motor_upgrade_savings = 0.0
+        total_motor_upgrade_cost = 0.0
+        total_vfd_savings = 0.0
+        total_vfd_cost = 0.0
         
         for i, motor in enumerate(motors_data):
             # Current energy consumption
             current_eff = MotorSystem.get_efficiency(motor['current_class'], motor['load_factor'])
             current_power = motor['rating'] * motor['load_factor']
             current_energy = current_power * total_hours * motor['quantity']
-            current_input = current_energy / current_eff
+            current_input = current_energy / current_eff if current_eff > 0 else 0.0
             
             # IE4 upgrade
             ie4_eff = MotorSystem.get_efficiency('IE4', motor['load_factor'])
-            ie4_input = current_energy / ie4_eff
+            ie4_input = current_energy / ie4_eff if ie4_eff > 0 else 0.0
             energy_savings_motor = current_input - ie4_input
             cost_savings_motor = energy_savings_motor * electricity_cost
-            upgrade_cost = motor['rating'] * motor['quantity'] * (MotorSystem.MOTOR_COSTS['IE4'] - 
-                                                                 MotorSystem.MOTOR_COSTS.get(motor['current_class'], 
-                                                                                           MotorSystem.MOTOR_COSTS['IE2']))
+            current_motor_cost = MotorSystem.MOTOR_COSTS.get(motor['current_class'], MotorSystem.MOTOR_COSTS['IE2'])
+            upgrade_cost = motor['rating'] * motor['quantity'] * (MotorSystem.MOTOR_COSTS['IE4'] - current_motor_cost)
             
             results['motor_upgrades'].append({
                 'motor_id': i+1,
                 'rating': motor['rating'],
                 'quantity': motor['quantity'],
                 'current_class': motor['current_class'],
-                'energy_savings': energy_savings_motor,
-                'cost_savings': cost_savings_motor,
-                'upgrade_cost': max(upgrade_cost, 100),  # Minimum cost
-                'payback_years': max(upgrade_cost, 100) / cost_savings_motor if cost_savings_motor > 0 else 999
+                'energy_savings': float(energy_savings_motor),
+                'cost_savings': float(cost_savings_motor),
+                'upgrade_cost': float(max(upgrade_cost, 100.0)),  # Minimum cost
+                'payback_years': float(max(upgrade_cost, 100.0) / cost_savings_motor if cost_savings_motor > 0 else 999.0)
             })
             
-            total_motor_upgrade_savings += cost_savings_motor
-            total_motor_upgrade_cost += max(upgrade_cost, 100)
+            total_motor_upgrade_savings += float(cost_savings_motor)
+            total_motor_upgrade_cost += float(max(upgrade_cost, 100.0))
             
             # VFD savings if applicable
             if motor['vfd_applicable']:
                 vfd_energy_savings, vfd_cost_savings, vfd_savings_pct = MotorSystem.calculate_vfd_savings(
                     motor['load_factor'], motor['rating'], total_hours * motor['quantity'], electricity_cost
                 )
-                vfd_cost = motor['rating'] * motor['quantity'] * 100  # $100/kW for VFD
+                vfd_cost = motor['rating'] * motor['quantity'] * 100.0  # $100/kW for VFD
                 
                 results['vfd_savings'].append({
                     'motor_id': i+1,
                     'rating': motor['rating'],
                     'quantity': motor['quantity'],
-                    'energy_savings': vfd_energy_savings,
-                    'cost_savings': vfd_cost_savings,
-                    'vfd_cost': vfd_cost,
-                    'payback_years': vfd_cost / vfd_cost_savings if vfd_cost_savings > 0 else 999,
-                    'savings_pct': vfd_savings_pct
+                    'energy_savings': float(vfd_energy_savings),
+                    'cost_savings': float(vfd_cost_savings),
+                    'vfd_cost': float(vfd_cost),
+                    'payback_years': float(vfd_cost / vfd_cost_savings if vfd_cost_savings > 0 else 999.0),
+                    'savings_pct': float(vfd_savings_pct)
                 })
                 
-                total_vfd_savings += vfd_cost_savings
-                total_vfd_cost += vfd_cost
+                total_vfd_savings += float(vfd_cost_savings)
+                total_vfd_cost += float(vfd_cost)
         
         # Calculate lighting retrofit savings
         current_lighting_energy = LightingSystem.calculate_lighting_energy(
@@ -435,15 +434,15 @@ with tab3:
         )
         lighting_energy_savings = current_lighting_energy - led_energy
         lighting_cost_savings = lighting_energy_savings * electricity_cost
-        lighting_retrofit_cost = num_fixtures * LightingSystem.LIGHTING_TYPES['LED']['cost_per_unit'] * 10  # Including installation
+        lighting_retrofit_cost = num_fixtures * LightingSystem.LIGHTING_TYPES['LED']['cost_per_unit'] * 10.0  # Including installation
         
         results['lighting_retrofit'] = {
-            'current_energy': current_lighting_energy,
-            'led_energy': led_energy,
-            'energy_savings': lighting_energy_savings,
-            'cost_savings': lighting_cost_savings,
-            'retrofit_cost': lighting_retrofit_cost,
-            'payback_years': lighting_retrofit_cost / lighting_cost_savings if lighting_cost_savings > 0 else 999
+            'current_energy': float(current_lighting_energy),
+            'led_energy': float(led_energy),
+            'energy_savings': float(lighting_energy_savings),
+            'cost_savings': float(lighting_cost_savings),
+            'retrofit_cost': float(lighting_retrofit_cost),
+            'payback_years': float(lighting_retrofit_cost / lighting_cost_savings if lighting_cost_savings > 0 else 999.0)
         }
         
         # Display results
@@ -468,7 +467,7 @@ with tab3:
             st.markdown('</div>', unsafe_allow_html=True)
         
         with col3:
-            co2_reduction = total_energy_savings * carbon_factor / 1000  # Tons
+            co2_reduction = total_energy_savings * carbon_factor / 1000.0  # Tons
             st.markdown('<div class="metric-card">', unsafe_allow_html=True)
             st.metric("CO₂ Reduction", f"{co2_reduction:,.1f} tons/year", 
                      delta=f"Equivalent to {co2_reduction/5:.0f} cars off the road")
@@ -601,7 +600,7 @@ with tab4:
                     'annual_savings': f"${motor['cost_savings']:,.0f}",
                     'payback': f"{motor['payback_years']:.1f} years",
                     'priority': 'High' if motor['payback_years'] <= 2 else 'Medium',
-                    'sort_key': 1/motor['payback_years'] if motor['payback_years'] > 0 else 0
+                    'sort_key': 1.0/motor['payback_years'] if motor['payback_years'] > 0 else 0.0
                 })
         
         # Add VFD implementations
@@ -614,7 +613,7 @@ with tab4:
                     'annual_savings': f"${vfd['cost_savings']:,.0f}",
                     'payback': f"{vfd['payback_years']:.1f} years",
                     'priority': 'High' if vfd['payback_years'] <= 2 else 'Medium',
-                    'sort_key': 1/vfd['payback_years'] if vfd['payback_years'] > 0 else 0
+                    'sort_key': 1.0/vfd['payback_years'] if vfd['payback_years'] > 0 else 0.0
                 })
         
         # Add lighting retrofit
@@ -627,7 +626,7 @@ with tab4:
                 'annual_savings': f"${lighting['cost_savings']:,.0f}",
                 'payback': f"{lighting['payback_years']:.1f} years",
                 'priority': 'High' if lighting['payback_years'] <= 2 else 'Medium',
-                'sort_key': 1/lighting['payback_years'] if lighting['payback_years'] > 0 else 0
+                'sort_key': 1.0/lighting['payback_years'] if lighting['payback_years'] > 0 else 0.0
             })
         
         # Sort by priority (highest ROI first)
