@@ -103,11 +103,11 @@ with st.sidebar:
     
     # Energy costs
     st.markdown("### 💰 Energy Costs")
-    electricity_cost = st.number_input("Electricity Cost ($/kWh)", 0.05, 0.30, 0.12, step=0.01, format="%.2f")
-    demand_cost = st.number_input("Demand Charge ($/kW-month)", 5.0, 30.0, 15.0, step=1.0, format="%.1f")
+    electricity_cost = st.number_input("Electricity Cost ($/kWh)", value=0.12, min_value=0.05, max_value=0.30, step=0.01)
+    demand_cost = st.number_input("Demand Charge ($/kW-month)", value=15.0, min_value=5.0, max_value=30.0, step=1.0)
     
     # Carbon factor
-    carbon_factor = st.number_input("CO₂ Emission Factor (kg/kWh)", 0.1, 1.5, 0.5, step=0.01, format="%.2f")
+    carbon_factor = st.number_input("CO₂ Emission Factor (kg/kWh)", value=0.5, min_value=0.1, max_value=1.5, step=0.01)
     
     st.markdown("---")
     st.markdown("### 🔄 Simulation Controls")
@@ -197,7 +197,7 @@ class LightingSystem:
     @staticmethod
     def calculate_lighting_energy(num_fixtures, wattage_per_fixture, operating_hours):
         """Calculate annual lighting energy consumption"""
-        return num_fixtures * wattage_per_fixture * operating_hours / 1000.0  # kWh
+        return float(num_fixtures * wattage_per_fixture * operating_hours / 1000.0)  # kWh
 
 # Default motor data based on factory type
 def get_default_motors(factory_type):
@@ -253,17 +253,34 @@ with tab1:
         for i, motor in enumerate(default_motors):
             cols = st.columns([2, 2, 2, 2, 2])
             with cols[0]:
-                rating = st.number_input(f"Rating (kW) #{i+1}", 0.75, 500.0, float(motor['rating']), step=0.5, key=f"rating_{i}")
+                rating = st.number_input(f"Rating (kW) #{i+1}", 
+                                       min_value=0.75, 
+                                       max_value=500.0, 
+                                       value=float(motor['rating']), 
+                                       step=0.5, 
+                                       key=f"rating_{i}")
             with cols[1]:
-                quantity = st.number_input(f"Quantity #{i+1}", 1, 100, int(motor['quantity']), key=f"qty_{i}")
+                quantity = st.number_input(f"Quantity #{i+1}", 
+                                         min_value=1, 
+                                         max_value=100, 
+                                         value=int(motor['quantity']), 
+                                         key=f"qty_{i}")
             with cols[2]:
-                load_factor = st.slider(f"Load Factor #{i+1}", 0.1, 1.0, float(motor['load_factor']), 0.05, key=f"load_{i}")
+                load_factor = st.slider(f"Load Factor #{i+1}", 
+                                      min_value=0.1, 
+                                      max_value=1.0, 
+                                      value=float(motor['load_factor']), 
+                                      step=0.05, 
+                                      key=f"load_{i}")
             with cols[3]:
-                current_class = st.selectbox(f"Current Class #{i+1}", ['IE1', 'IE2', 'IE3', 'IE4'], 
+                current_class = st.selectbox(f"Current Class #{i+1}", 
+                                           ['IE1', 'IE2', 'IE3', 'IE4'], 
                                            index=['IE1', 'IE2', 'IE3', 'IE4'].index(motor['current_class']), 
                                            key=f"class_{i}")
             with cols[4]:
-                vfd_applicable = st.checkbox(f"VFD Applicable #{i+1}", value=(load_factor < 0.8), key=f"vfd_{i}")
+                vfd_applicable = st.checkbox(f"VFD Applicable #{i+1}", 
+                                           value=(float(motor['load_factor']) < 0.8), 
+                                           key=f"vfd_{i}")
             
             motors_data.append({
                 'rating': float(rating),
@@ -275,8 +292,6 @@ with tab1:
     
     with col2:
         st.markdown("#### Motor Efficiency Standards")
-        st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/IE-classes-en.svg/800px-IE-classes-en.svg.png", 
-                caption="International Efficiency (IE) Classification")
         
         st.markdown("**IE Class Comparison:**")
         ie_data = pd.DataFrame({
@@ -285,6 +300,23 @@ with tab1:
             'Typical Savings vs IE1': ['0%', '3-5%', '5-8%', '8-12%']
         })
         st.table(ie_data)
+        
+        # Display efficiency curves
+        st.markdown("**Efficiency at Different Loads:**")
+        load_factors = [0.25, 0.5, 0.75, 1.0]
+        efficiency_data = []
+        for class_type in ['IE1', 'IE2', 'IE3', 'IE4']:
+            efficiencies = [MotorSystem.get_efficiency(class_type, lf) for lf in load_factors]
+            efficiency_data.append({
+                'Class': class_type,
+                '25% Load': f"{efficiencies[0]:.1%}",
+                '50% Load': f"{efficiencies[1]:.1%}",
+                '75% Load': f"{efficiencies[2]:.1%}",
+                '100% Load': f"{efficiencies[3]:.1%}"
+            })
+        
+        efficiency_df = pd.DataFrame(efficiency_data)
+        st.table(efficiency_df)
         
         st.info("""
         **VFD Recommendation:**
@@ -310,20 +342,32 @@ with tab2:
         
         col1a, col1b, col1c = st.columns(3)
         with col1a:
-            num_fixtures = st.number_input("Number of Fixtures", 1, 1000, int(default_lighting['fixtures']))
+            num_fixtures = st.number_input("Number of Fixtures", 
+                                         min_value=1, 
+                                         max_value=1000, 
+                                         value=int(default_lighting['fixtures']))
         with col1b:
-            wattage_per = st.number_input("Wattage per Fixture (W)", 10, 1000, float(default_lighting['wattage']), step=10.0)
+            wattage_per = st.number_input("Wattage per Fixture (W)", 
+                                        min_value=10.0, 
+                                        max_value=1000.0, 
+                                        value=float(default_lighting['wattage']), 
+                                        step=10.0)
         with col1c:
-            daily_hours = st.number_input("Operating Hours/Day", 1, 24, int(default_lighting['hours_per_day']))
+            daily_hours = st.number_input("Operating Hours/Day", 
+                                        min_value=1, 
+                                        max_value=24, 
+                                        value=int(default_lighting['hours_per_day']))
         
         # Calculate current lighting energy
         annual_hours = daily_hours * operating_days
         current_energy = LightingSystem.calculate_lighting_energy(num_fixtures, wattage_per, annual_hours)
         
         st.markdown("#### LED Retrofit Proposal")
-        led_wattage = st.slider("Proposed LED Wattage (W)", 10, 200, 
-                               int(wattage_per * 0.4),  # Typical LED uses 40% of traditional lighting
-                               help="LED fixtures typically provide same lumens at 40-60% of traditional wattage")
+        led_wattage = st.slider("Proposed LED Wattage (W)", 
+                              min_value=10, 
+                              max_value=200, 
+                              value=int(wattage_per * 0.4),  # Typical LED uses 40% of traditional lighting
+                              help="LED fixtures typically provide same lumens at 40-60% of traditional wattage")
         
         # Calculate LED energy
         led_energy = LightingSystem.calculate_lighting_energy(num_fixtures, led_wattage, annual_hours)
@@ -349,6 +393,7 @@ with tab2:
         st.table(tech_df)
         
         # Quick comparison metrics
+        st.markdown("**Energy Comparison:**")
         st.metric("Current Annual Energy", f"{current_energy:,.0f} kWh")
         st.metric("Proposed LED Energy", f"{led_energy:,.0f} kWh")
         
